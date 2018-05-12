@@ -19,7 +19,7 @@ const cli = meow(
 
 	Options
 		--output -o           defines the output format (JSON or YAML)
-                --outputfolder -f     a relative path representing the folder the output should be written to
+		--outputfolder -f     a relative path representing the folder the output should be written to
 		--limit -l	      defines the maximum number of posts to be crawled
 		--interactive -i      uses puppeteer without headless mode
 
