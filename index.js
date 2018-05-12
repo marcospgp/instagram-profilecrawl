@@ -2,6 +2,7 @@
 
 const { promisify } = require('util');
 const fs = require('fs');
+const path = require('path');
 const puppeteer = require('puppeteer');
 const meow = require('meow');
 const ora = require('ora');
@@ -17,14 +18,18 @@ const cli = meow(
     	$ instagram-profilecrawl <name>
 
 	Options
-		--output -o           define output format (JSON, YAML)
-		--limit -l	  	      get only the number of post defined by the limit
-		--interactive -i	  no headless mode
+		--output -o           defines the output format (JSON or YAML)
+                --outputfolder -f     a relative path representing the folder the output should be written to
+		--limit -l	      defines the maximum number of posts to be crawled
+		--interactive -i      uses puppeteer without headless mode
+
+        The name of the created file is the Instagram username of the crawled profile.
 
 	Examples
 		$ instagram-profilecrawl nacimgoura
 		$ instagram-profilecrawl nacimgoura -o yaml
-		$ instagram-profilecrawl nacimgoura -o yaml - l 10
+		$ instagram-profilecrawl nacimgoura -o yaml -l 10
+		$ instagram-profilecrawl nacimgoura -o json -f instagram/
 `,
 	{
 		flags: {
@@ -39,6 +44,10 @@ const cli = meow(
 			interactive: {
 				type: 'boolean',
 				alias: 'i'
+			},
+			outputfolder: {
+			        type: 'string',
+				alias: 'f'
 			}
 		}
 	}
@@ -55,6 +64,7 @@ const CrawlerInstagram = class {
 		this.output = flags && flags.output ? flags.output : null;
 		this.limit = flags && flags.limit ? flags.limit : null;
 		this.interactive = flags && flags.interactive ? flags.interactive : false;
+		this.outputfolder = flags && flags.outputfolder ? flags.outputfolder : '';
 
 		// Init browser
 		this.browser = await puppeteer.launch({
@@ -210,10 +220,10 @@ const CrawlerInstagram = class {
 	// Write profile in file
 	async writeProfile() {
 		if (this.output === 'yaml') {
-			return writeYamlAsync(`${this.input}.yml`, this.dataProfile);
+			return writeYamlAsync(`${path.resolve(path.join(this.outputfolder, this.input))}.yml`, this.dataProfile);
 		}
 		return writeFileAsync(
-			`${this.input}.json`,
+			`${path.resolve(path.join(this.outputfolder, this.input))}.json`,
 			JSON.stringify(this.dataProfile, null, 2)
 		);
 	}
